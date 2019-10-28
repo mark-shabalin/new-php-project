@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+export UID
+export GID=$(id -g)
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+LINE=$(grep COMPOSE_PROJECT_NAME $DIR/.env | head -n 1 | xargs)
+COMPOSE_PROJECT_NAME=${LINE#COMPOSE_PROJECT_NAME=}
+
+cd $DIR
+
+docker-compose down
+docker volume rm ${COMPOSE_PROJECT_NAME}_mysql_data ${COMPOSE_PROJECT_NAME}_pma_sessions

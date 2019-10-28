@@ -1,0 +1,56 @@
+version: "3.3"
+services:
+  apache:
+    build:
+      context: ./apache
+      args:
+        - APACHE_IMAGE=${APACHE_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_apache
+    ports:
+      - ${MAIN_PORT}:80
+    volumes:
+      - ../${DOCUMENT_ROOT}:/usr/local/apache2/htdocs
+      - ./apache/apache.conf:/usr/local/apache2/conf/apache.conf
+    environment:
+      COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME}
+  php_fpm:
+    build: 
+      context: ./php-fpm
+      args:
+        - UID=${UID}
+        - GID=${GID}
+        - PHP_IMAGE=${PHP_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_php_fpm
+    expose:
+      - 9000
+    volumes:
+      - ../${DOCUMENT_ROOT}:/var/www/html
+  mysql:
+    image: ${MYSQL_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_mysql
+    ports:
+      - ${MYSQL_PORT}:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/conf.d/mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  phpmyadmin:
+    image: ${PMA_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_phpmyadmin
+    ports:
+      - ${PMA_PORT}:80
+    external_links:
+        - db_server:db
+    volumes:
+     - pma_sessions:/sessions
+    environment:
+      PMA_HOST: ${COMPOSE_PROJECT_NAME}_mysql
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+volumes:
+  mysql_data:
+  pma_sessions:

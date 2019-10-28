@@ -1,0 +1,3 @@
+htdocs/*
+!htdocs/.gitkeep
+.env
